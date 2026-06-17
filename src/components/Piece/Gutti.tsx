@@ -37,7 +37,7 @@ export const Gutti: React.FC<GuttiProps> = ({
     );
   }
 
-  const hitSize = radius * 2.5; // generous transparent hit area
+  const hitSize = radius * 5.5; // generous transparent hit area
 
   return (
     <G>
@@ -47,8 +47,11 @@ export const Gutti: React.FC<GuttiProps> = ({
         y={cy - hitSize / 2}
         width={hitSize}
         height={hitSize}
-        fill="transparent"
-        onPress={onPress}
+        fill="rgba(255, 255, 255, 0.01)"
+        onPress={(e) => {
+            console.log("Registered");
+            onPress();
+        }}
       />
       {skin === 'round' ? (
         <RoundBun cx={cx} cy={cy} r={radius} fill={fill} stroke={stroke} strokeWidth={strokeW} isMovable={isMovable} onPress={onPress} />

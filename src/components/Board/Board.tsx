@@ -53,14 +53,15 @@ export const Board: React.FC<BoardProps> = ({
         {/* Safe cell star markers */}
         <SafeMarkers theme={theme} />
 
-        {/* All pieces — skip the one being animated */}
-        <PiecesLayer
-          game={game}
-          theme={theme}
-          onPiecePress={onPiecePress}
-          animatingPieceId={animPiece?.id}
-        />
       </Svg>
+
+      {/* Pieces as absolute-positioned Views OUTSIDE SVG — reliable touch on Android */}
+      <PiecesLayer
+        game={game}
+        theme={theme}
+        onPiecePress={onPiecePress}
+        animatingPieceId={animPiece?.id}
+      />
 
       {/* Animated piece overlay — rendered as Animated.View on top of SVG */}
       {animPiece && (
