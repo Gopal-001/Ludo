@@ -3,7 +3,7 @@ export type PlayerColor = 'red' | 'green' | 'yellow' | 'blue';
 export const PLAYER_COLORS: PlayerColor[] = ['red', 'green', 'yellow', 'blue'];
 
 // ─── Gutti (piece) visual skin ───────────────────────────────────────────────
-export type GuttiSkin = 'round' | 'star';
+export type GuttiSkin = 'round' | 'pawn' | 'happy';
 
 // ─── A single piece on the board ─────────────────────────────────────────────
 export interface Piece {
@@ -84,6 +84,7 @@ export interface GameState {
   players: Player[];
   currentPlayerIndex: number;
   diceValue: number | null;
+  lastDiceValue: number | null;
   consecutiveSixes: number;
   phase: GamePhase;
   winner: PlayerColor | null;

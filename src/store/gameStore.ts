@@ -75,11 +75,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   startGame: () => {
     const { config, guttiSkin } = get();
-    const players = makePlayers(config.playerCount, guttiSkin);
     const game: GameState = {
-      players,
+      players: makePlayers(config.playerCount, guttiSkin),
       currentPlayerIndex: 0,
       diceValue: null,
+      lastDiceValue: null,
       consecutiveSixes: 0,
       phase: 'rolling',
       winner: null,
@@ -107,30 +107,55 @@ export const useGameStore = create<GameStore>((set, get) => ({
           ...game,
           diceValue: dice,
           consecutiveSixes: 0,
-          phase: 'rolling',
-          currentPlayerIndex: nextPlayerIndex(game),
+          phase: 'moving', // Lock UI
           movablePieceIds: [],
         },
       });
+
+      setTimeout(() => {
+        const current = get().game;
+        if (!current) return;
+        set({
+          game: {
+            ...current,
+            diceValue: null,
+            phase: 'rolling',
+            currentPlayerIndex: nextPlayerIndex(current),
+          }
+        });
+      }, 500);
       return;
     }
 
     const movable = getMovablePieces(currentPlayer, dice, game.players, game.config);
 
     if (movable.length === 0) {
-      // No moves — pass turn
+      // No moves — show dice, lock UI, wait 500ms, then pass turn
       set({
         game: {
           ...game,
           diceValue: dice,
+          lastDiceValue: dice,
           consecutiveSixes: newConsecutive,
-          phase: 'rolling',
-          currentPlayerIndex: dice === 6 && game.config.sixBehavior !== 'open_only'
-            ? game.currentPlayerIndex // keep turn on 6 if configured
-            : nextPlayerIndex(game),
+          phase: 'moving', // Lock UI
           movablePieceIds: [],
         },
       });
+
+      setTimeout(() => {
+        const current = get().game;
+        if (!current) return;
+        set({
+          game: {
+            ...current,
+            diceValue: null,
+            phase: 'rolling',
+            currentPlayerIndex: dice === 6 && current.config.sixBehavior !== 'open_only'
+              ? current.currentPlayerIndex
+              : nextPlayerIndex(current),
+          }
+        });
+      }, 500);
       return;
     }
 
@@ -139,6 +164,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       const nextGame: GameState = {
         ...game,
         diceValue: dice,
+        lastDiceValue: dice,
         consecutiveSixes: newConsecutive,
         phase: 'moving',
         movablePieceIds: movable,
@@ -151,6 +177,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       game: {
         ...game,
         diceValue: dice,
+        lastDiceValue: dice,
         consecutiveSixes: newConsecutive,
         phase: 'moving',
         movablePieceIds: movable,
@@ -194,18 +221,33 @@ export const useGameStore = create<GameStore>((set, get) => ({
       ? game.currentPlayerIndex
       : nextPlayerIndex({ ...game, players: updatedPlayers });
 
+    // Instantly update board state but lock turn phase
     set({
       game: {
         ...game,
         players: updatedPlayers,
-        currentPlayerIndex: winner ? game.currentPlayerIndex : nextIdx,
-        diceValue: null,
+        diceValue: null, // clear dice while piece animates/waits
         consecutiveSixes: result.extraTurn ? game.consecutiveSixes : 0,
-        phase: winner ? 'finished' : 'rolling',
+        phase: winner ? 'finished' : 'moving', // lock UI
         winner,
         movablePieceIds: [],
       },
     });
+
+    if (!winner) {
+      // Wait 0.5s before formally passing turn to next player
+      setTimeout(() => {
+        const current = get().game;
+        if (!current) return;
+        set({
+          game: {
+            ...current,
+            currentPlayerIndex: nextIdx,
+            phase: 'rolling',
+          }
+        });
+      }, 500);
+    }
   },
 }));
 

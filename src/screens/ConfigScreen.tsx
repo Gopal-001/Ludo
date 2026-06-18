@@ -5,12 +5,15 @@ import {
 } from 'react-native';
 import { useGameStore } from '../store/gameStore';
 import { getTheme } from '../themes/themes';
-import { GameConfig, SixBehavior, OneBehavior } from '../engine/types';
+import { GameConfig, GuttiSkin, SixBehavior, OneBehavior } from '../engine/types';
+import { SKIN_META } from '../components/Piece/skins';
 
 export const ConfigScreen: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const config = useGameStore(s => s.config);
   const themePreset = useGameStore(s => s.theme);
+  const guttiSkin = useGameStore(s => s.guttiSkin);
   const setConfig = useGameStore(s => s.setConfig);
+  const setGuttiSkin = useGameStore(s => s.setGuttiSkin);
   const theme = getTheme(themePreset);
 
   const set = (patch: Partial<GameConfig>) => setConfig(patch);
@@ -57,11 +60,34 @@ export const ConfigScreen: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         <TouchableOpacity onPress={onBack} style={styles.backBtn}>
           <Text style={[styles.backText, { color: theme.accent }]}>← Back</Text>
         </TouchableOpacity>
-        <Text style={[styles.title, { color: theme.text }]}>Game Rules</Text>
+        <Text style={[styles.title, { color: theme.text }]}>Settings</Text>
         <View style={styles.backBtn} />
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll}>
+
+        {/* ── Piece Style ── */}
+        <Section title="Piece Style" theme={theme}>
+          <View style={styles.skinRow}>
+            {(Object.keys(SKIN_META) as GuttiSkin[]).map(key => {
+              const meta = SKIN_META[key];
+              const active = guttiSkin === key;
+              return (
+                <TouchableOpacity
+                  key={key}
+                  onPress={() => setGuttiSkin(key)}
+                  style={[
+                    styles.skinChip,
+                    { borderColor: active ? theme.accent : theme.border, backgroundColor: active ? theme.surfaceAlt : theme.surface },
+                  ]}
+                >
+                  <Text style={styles.skinEmoji}>{meta.emoji}</Text>
+                  <Text style={[styles.skinLabel, { color: active ? theme.accent : theme.text }]}>{meta.label}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </Section>
 
         {/* ── Rolling a 6 ── */}
         <Section title="Rolling a 6" theme={theme}>
@@ -259,4 +285,18 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   toggleText: { flex: 1 },
+  skinRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  skinChip: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 2,
+    gap: 4,
+  },
+  skinEmoji: { fontSize: 24 },
+  skinLabel: { fontSize: 13, fontWeight: '600' },
 });

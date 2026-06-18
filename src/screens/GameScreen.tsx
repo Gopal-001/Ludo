@@ -65,13 +65,21 @@ export const GameScreen: React.FC<GameScreenProps> = ({ onExit }) => {
     startCy = startCell[0] * CELL + CELL / 2;
 
     if (piece.position === -1) {
-      // Piece is at home, compute its spread position
+      // Calculate visual home coordinate for this piece
       const homeCol = piece.color === 'red' || piece.color === 'blue' ? 0 : 9;
       const homeRow = piece.color === 'red' || piece.color === 'green' ? 0 : 9;
       const homeCenterX = homeCol * CELL + 3 * CELL;
       const homeCenterY = homeRow * CELL + 3 * CELL;
-      startCx = homeCenterX + (startCx - homeCenterX) * 1.35;
-      startCy = homeCenterY + (startCy - homeCenterY) * 1.35;
+      
+      const spreadOffset = [
+        { dx: -1, dy: -1 },
+        { dx: 1, dy: -1 },
+        { dx: -1, dy: 1 },
+        { dx: 1, dy: 1 },
+      ][piece.index];
+      
+      startCx = homeCenterX + spreadOffset.dx * CELL;
+      startCy = homeCenterY + spreadOffset.dy * CELL;
 
       // Hop straight to opening cell 0
       const destCell = getBoardCell(piece.color, 0, piece.index);
@@ -200,12 +208,12 @@ export const GameScreen: React.FC<GameScreenProps> = ({ onExit }) => {
         <View style={[styles.diceRow, { width: BOARD_SIZE }]}>
           <View style={styles.diceSlot}>
             {currentPlayer.id === 'red' && (
-              <Dice value={game.diceValue} rolling={rolling} disabled={game.phase !== 'rolling' || rolling || game.winner !== null} theme={theme} onRoll={handleRoll} />
+              <Dice value={game.diceValue ?? game.lastDiceValue} rolling={rolling} disabled={game.phase !== 'rolling' || rolling || game.winner !== null} theme={theme} playerColor={currentPlayer.id} playerSkin={currentPlayer.guttiSkin} onRoll={handleRoll} />
             )}
           </View>
           <View style={styles.diceSlot}>
             {currentPlayer.id === 'green' && (
-              <Dice value={game.diceValue} rolling={rolling} disabled={game.phase !== 'rolling' || rolling || game.winner !== null} theme={theme} onRoll={handleRoll} />
+              <Dice value={game.diceValue ?? game.lastDiceValue} rolling={rolling} disabled={game.phase !== 'rolling' || rolling || game.winner !== null} theme={theme} playerColor={currentPlayer.id} playerSkin={currentPlayer.guttiSkin} onRoll={handleRoll} />
             )}
           </View>
         </View>
@@ -222,12 +230,12 @@ export const GameScreen: React.FC<GameScreenProps> = ({ onExit }) => {
         <View style={[styles.diceRow, { width: BOARD_SIZE }]}>
           <View style={styles.diceSlot}>
             {currentPlayer.id === 'blue' && (
-              <Dice value={game.diceValue} rolling={rolling} disabled={game.phase !== 'rolling' || rolling || game.winner !== null} theme={theme} onRoll={handleRoll} />
+              <Dice value={game.diceValue ?? game.lastDiceValue} rolling={rolling} disabled={game.phase !== 'rolling' || rolling || game.winner !== null} theme={theme} playerColor={currentPlayer.id} playerSkin={currentPlayer.guttiSkin} onRoll={handleRoll} />
             )}
           </View>
           <View style={styles.diceSlot}>
             {currentPlayer.id === 'yellow' && (
-              <Dice value={game.diceValue} rolling={rolling} disabled={game.phase !== 'rolling' || rolling || game.winner !== null} theme={theme} onRoll={handleRoll} />
+              <Dice value={game.diceValue ?? game.lastDiceValue} rolling={rolling} disabled={game.phase !== 'rolling' || rolling || game.winner !== null} theme={theme} playerColor={currentPlayer.id} playerSkin={currentPlayer.guttiSkin} onRoll={handleRoll} />
             )}
           </View>
         </View>
